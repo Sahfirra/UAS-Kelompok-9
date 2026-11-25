@@ -1,143 +1,136 @@
-// @ts-nocheck
-import * as readline from 'readline';
+import * as readline from 'readline-sync';
 
-const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
-});
+function main() {
+    console.log("==================================");
+    console.log("      SISTEM KASIR BENGKEL MOTOR");
+    console.log("==================================\n");
 
-const askQuestion = (query: string): Promise<string> => {
-    return new Promise((resolve) => rl.question(query, resolve));
-};
-
-async function main() {
-    console.log("==============================");
-    console.log("   SISTEM KASIR BENGKEL MOTOR ");
-    console.log("==============================\n");
-
-    let totalBiaya: number = 0;
+    let biayaService: number = 0;
+    let biayaSparepart: number = 0;
     let totalDiskon: number = 0;
-    let biayaService: number = 0; 
-    let biayasparepart: number = 0; 
+    let subtotal: number = 0;
+    let totalBayar: number = 0;
 
-    // 1. PENGGUNAAN SWITCH (TIPE MOTOR: BEBEK, MATIC, SPORT)
-    const inputMotor = await askQuestion("Pilih Tipe Motor (1: Bebek, 2: Matic, 3: Sport): ");
-    const tipeMotor: number = parseInt(inputMotor);
+    // 1 tipe motor
+    let tipeMotor: number = parseInt(
+        readline.question("Pilih Tipe Motor (1: Bebek, 2: Matic, 3: Sport): ")
+    );
 
-    const inputPaket = await askQuestion("Pilih Paket service (1: Ringan, 2: Lengkap): ");
-    const paketService: number = parseInt(inputPaket);
+    // 2 paket service
+    let paketService: number = parseInt(
+        readline.question("Pilih Paket Service (1: Ringan, 2: Lengkap): ")
+    );
 
+    // 3 biaya service (Switch Case)
     switch (tipeMotor) {
         case 1:
-            console.log("Kategori Motor: Bebek");
-            switch (paketService) {
-                case 1: 
-                    biayaService = 50000;
-                    break;
-                case 2: 
-                    biayaService = 80000;
-                    break; 
-                default:
-                    biayaService = 40000;
-                    break;
+            console.log("\nKategori Motor: Bebek");
+
+            if (paketService === 1) {
+                biayaService = 50000;
+            } else {
+                biayaService = 80000;
             }
             break;
 
         case 2:
-            console.log("Kategori Motor: Matic");
-            switch (paketService) {
-                case 1: 
-                    biayaService = 50000;
-                    break;
-                case 2: 
-                    biayaService = 80000;
-                    break; 
-                default:
-                    biayaService = 40000;
-                    break;
+            console.log("\nKategori Motor: Matic");
+
+            if (paketService === 1) {
+                biayaService = 50000;
+            } else {
+                biayaService = 80000;
             }
             break;
 
         case 3:
-            console.log("Kategori Motor: Sport");
+            console.log("\nKategori Motor: Sport");
+
             if (paketService === 1) {
                 biayaService = 75000;
             } else {
                 biayaService = 110000;
             }
-            break; 
+            break;
 
         default:
-            console.log("Pilihan motor tidak valid, set ke tarif standar.");
-            biayaService = 50000; 
+            console.log("\nPilihan motor tidak valid.");
+            biayaService = 50000;
             break;
     }
 
-    totalBiaya += biayaService;
+    // 4 sparepart atau oli (Switch Case)
+    let pilihanSparepart: number = parseInt(
+        readline.question("\nApakah ganti sparepart/oli? (1: Ya, 2: Tidak): ")
+    );
 
-    // 2. PENGGUNAAN IF SPAREPART
-    const inputSparepart = await askQuestion("\nApakah ganti sparepart/oli? (1: Ya, 2: Tidak): ");
-    const isGantiSparepart: number = parseInt(inputSparepart);
+    if (pilihanSparepart === 1) {
+        let jenisOli: number = parseInt(
+            readline.question("Pilih Oli (1: Standard, 2: Synthetic): ")
+        );
 
-    if (isGantiSparepart === 1) {
-        const inputJenisOli = await askQuestion("Pilih Sparepart (1: Oli Standard, 2: Oli Synthetic): ");
-        const jenisOli: number = parseInt(inputJenisOli); 
-        
-        if (jenisOli === 1) {
-            biayasparepart = 45000; 
-        } else {
-            biayasparepart = 75000; 
+        switch (jenisOli) {
+            case 1:
+                biayaSparepart = 45000;
+                break;
+
+            case 2:
+                biayaSparepart = 75000;
+                break;
+
+            default:
+                biayaSparepart = 0;
+                console.log("Pilihan oli tidak valid.");
+                break;
         }
-        
-        totalBiaya += biayasparepart; 
     }
 
-    // 3. DISKON MEMBER
-    const inputMember = await askQuestion("\nApakah pelanggan memiliki kartu member? (iya/tidak): ");
-    const memberInputClean = inputMember.toLowerCase();
-    const isMember: boolean = memberInputClean === 'iya' || memberInputClean === 'y';
+    // 5 member (Nested If)
+    let member: number = parseInt(
+        readline.question("\nApakah pelanggan memiliki kartu member? (1: Iya, 2: Tidak): ")
+    );
 
-    if (isMember) {
-        const inputDurasi = await askQuestion("Berapa lama menjadi member (berapa bulan)? ");
-        const durasiMember: number = parseInt(inputDurasi); 
+    if (member === 1) {
+        let durasiMember: number = parseInt(
+            readline.question("Berapa lama menjadi member (bulan)? ")
+        );
 
         if (durasiMember >= 6) {
-            console.log("Pelanggan mendapat Diskon Member Setia (10%)");
-            const diskonMember: number = totalBiaya * 0.10;
-            totalDiskon += diskonMember; 
+            console.log("Pelanggan mendapat Diskon Member Setia 10%");
+            totalDiskon = totalDiskon + (biayaService + biayaSparepart) * 0.10;
         } else {
-            console.log("Pelanggan mendapat Diskon Member Baru (5%)");
-            const diskonMember: number = totalBiaya * 0.05; 
-            totalDiskon += diskonMember;
+            console.log("Pelanggan mendapat Diskon Member Baru 5%");
+            totalDiskon = totalDiskon + (biayaService + biayaSparepart) * 0.05;
         }
     }
 
-    // 4. VOUCHER PROMO
-    const kodeVoucer: string = await askQuestion("\nMasukan Kode Voucher Promo (Tekan enter jika tidak ada): ");
+    // 6 kode voucher (If-Else)
+    let kodeVoucher: string = readline.question(
+        "\nMasukkan Kode Voucher (Tekan Enter jika tidak ada): "
+    );
 
-    if (kodeVoucer === "ANDRAGANTENG10" && !(totalBiaya < 50000)) {
-        console.log("Voucher Promo Valid! Potongan Tambahan Rp 10.000"); 
-        totalDiskon += 10000; 
-    } else if (kodeVoucer !== "") { 
+    if (kodeVoucher === "ANDRAGANTENG10" && (biayaService + biayaSparepart >= 50000)) {
+        console.log("Voucher Valid! Potongan Tambahan Rp 10.000");
+        totalDiskon = totalDiskon + 10000;
+    } else if (kodeVoucher !== "") {
         console.log("Kode voucher tidak berlaku.");
     }
 
-    // Perhitungan total
-    const subtotal = biayaService + biayasparepart;
-    const totalBayar = subtotal - totalDiskon;
+    // 7 total pembayaran
+    subtotal = biayaService + biayaSparepart;
+    totalBayar = subtotal - totalDiskon;
 
-    console.log("\n-----------------------------------------");
-    console.log("              NOTA TRANSAKSI             ");
-    console.log("-----------------------------------------");
-    console.log(`Biaya Service               : Rp ${biayaService}`);
-    console.log(`Biaya Sparepart             : Rp ${biayasparepart}`);
-    console.log(`Subtotal Biaya              : Rp ${subtotal}`);
-    console.log(`Total Diskon                : Rp ${totalDiskon}`);
-    console.log("-----------------------------------------");
-    console.log(`TOTAL BAYAR AKHIR           : Rp ${totalBayar}`);
-    console.log("-----------------------------------------");
-    
-    rl.close();
+    // 8 nota transaksi
+    console.log("\n==================================");
+    console.log("           NOTA TRANSAKSI");
+    console.log("==================================");
+    console.log("Biaya Service       : Rp " + biayaService);
+    console.log("Biaya Sparepart     : Rp " + biayaSparepart);
+    console.log("Subtotal Biaya      : Rp " + subtotal);
+    console.log("Total Diskon        : Rp " + totalDiskon);
+    console.log("----------------------------------");
+    console.log("TOTAL BAYAR AKHIR   : Rp " + totalBayar);
+    console.log("==================================");
 }
 
 main();
